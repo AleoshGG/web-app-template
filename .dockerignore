@@ -1,0 +1,34 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (reinstalled in Docker)
+node_modules
+
+# Build output
+.next
+out
+build
+
+# Environment files (never leak secrets into the image)
+.env
+.env.*
+!.env.example
+
+# Dev / editor tooling
+.vscode
+.idea
+*.log
+*.pem
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# CI / docs
+coverage
+README.md
+prisma-8.md
+AGENTS.md
+CLAUDE.md

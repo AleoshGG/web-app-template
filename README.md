@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web-app-template
 
-## Getting Started
+Plantilla de aplicación web con **Next.js 16 · Prisma ORM 8 · PostgreSQL · Railway**.
 
-First, run the development server:
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| Frontend / SSR | Next.js 16 (App Router) |
+| Base de datos | PostgreSQL ≥ 15 |
+| ORM | Prisma ORM 8 (PSL, postgres adapter) |
+| Estilos | Tailwind CSS 4 |
+| Package manager | pnpm 11 |
+| Despliegue | Railway via Dockerfile |
+
+## Inicio rápido
+
+### 1. Variables de entorno
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
+# Edita .env con tu DATABASE_URL
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Instalar dependencias
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Crear tablas en la base de datos
 
-## Learn More
+```bash
+pnpm db:push          # Aplica el schema a la DB (primera vez / dev)
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Iniciar en desarrollo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Prisma ORM
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El schema de datos vive en [`src/prisma/contract.prisma`](src/prisma/contract.prisma).  
+El cliente tipado se importa desde [`src/prisma/db.ts`](src/prisma/db.ts):
+
+```ts
+import { db } from '@/src/prisma/db';
+
+const users = await db.orm.public.User.all();
+```
+
+### Comandos útiles
+
+```bash
+pnpm contract:emit    # Regenera contract.json y contract.d.ts tras editar el schema
+pnpm db:push          # Crea / sincroniza las tablas en la DB (dev)
+pnpm db:migrate       # Aplica migraciones en producción
+```
+
+> Consulta [`prisma-8.md`](prisma-8.md) para una referencia completa de Prisma ORM 8.
+
+---
+
+## Despliegue en Railway
+
+1. Crea un nuevo proyecto en [Railway](https://railway.com).
+2. Agrega un plugin de **PostgreSQL** — Railway inyecta `DATABASE_URL` automáticamente.
+3. Conecta el repositorio. Railway detectará el [`railway.json`](railway.json) y usará el [`Dockerfile`](Dockerfile).
+4. El build corre `prisma contract emit && next build`; la imagen resultante usa el **standalone output** de Next.js.
+
+### Variables de entorno requeridas en Railway
+
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | Cadena de conexión PostgreSQL (auto-inyectada por el plugin) |
+| `NEXT_PUBLIC_APP_URL` | URL pública de la app (ej. `https://mi-app.railway.app`) |
+
+---
+
+## Estructura relevante
+
+```
+├── app/                        # Rutas de Next.js (App Router)
+├── src/
+│   └── prisma/
+│       ├── contract.prisma     # Schema de datos (editar aquí)
+│       ├── contract.json       # Compilado (generado)
+│       ├── contract.d.ts       # Tipos (generado)
+│       └── db.ts               # Cliente Prisma
+├── prisma.config.ts            # Config del CLI de Prisma
+├── next.config.ts              # Config de Next.js (output: standalone)
+├── Dockerfile                  # Multi-stage build para Railway
+├── railway.json                # Config de despliegue Railway
+└── .env.example                # Plantilla de variables de entorno
+```
