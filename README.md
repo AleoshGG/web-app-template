@@ -1,6 +1,6 @@
 # web-app-template
 
-Plantilla de aplicación web ligera y rápida con **Next.js 16 · Tailwind CSS 4 · Railway**.
+Plantilla de aplicación web ligera y rápida con **Next.js 16 · React 19 · HeroUI v3 · Tailwind CSS 4 · Railway**.
 
 Diseñada para ser minimalista, rápida de construir e independiente de capas de datos por defecto.
 
@@ -12,7 +12,8 @@ Diseñada para ser minimalista, rápida de construir e independiente de capas de
 |---|---|
 | Frontend / SSR | Next.js 16 (App Router) |
 | Runtime | React 19 |
-| Estilos | Tailwind CSS 4 |
+| Componentes UI | HeroUI v3 (`@heroui/react`) |
+| Estilos | Tailwind CSS 4 (`@heroui/styles`) |
 | Package manager | pnpm 11 |
 | Despliegue | Railway via Dockerfile (standalone output) |
 | Persistencia / Base de datos | *Opcional* (ver [`GuideLines.md`](GuideLines.md)) |
@@ -40,6 +41,55 @@ pnpm dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+---
+
+## Componentes UI con HeroUI v3
+
+Esta plantilla incluye **HeroUI v3** preconfigurado de forma nativa para Tailwind CSS 4 y React 19.
+
+### Puntos clave de HeroUI v3
+- **Sin necesidad de `<HeroUIProvider>`:** En HeroUI v3 no se requiere envolver la aplicación en un proveedor de contexto (`<HeroUIProvider>`), evitando overhead innecesario en tiempo de ejecución. La librería funciona directamente a través de CSS mediante `@import "@heroui/styles";` en `app/globals.css`.
+- **Componentes Compuestos (Compound Components):** Los componentes complejos se estructuran mediante composición con dot-notation (ej. `<Card><Card.Header><Card.Title>...</Card.Title></Card.Header></Card>`).
+- **Variantes Semánticas:** Uso de variantes semánticas adaptables al tema (`primary`, `secondary`, `tertiary`, `danger`, `outline`, `ghost`).
+- **Eventos accesibles:** Se recomienda usar `onPress` en lugar de `onClick` en componentes interactivos para una mejor accesibilidad táctil y de teclado (React Aria).
+
+### Ejemplo de uso
+
+```tsx
+"use client";
+
+import { Button, Card } from "@heroui/react";
+
+export function ExampleCard() {
+  return (
+    <Card className="w-full max-w-md">
+      <Card.Header>
+        <Card.Title>Título de la tarjeta</Card.Title>
+        <Card.Description>Descripción del componente</Card.Description>
+      </Card.Header>
+      <Card.Content>
+        <p className="text-sm text-muted">Contenido de ejemplo.</p>
+      </Card.Content>
+      <Card.Footer className="flex gap-2">
+        <Button variant="primary" onPress={() => console.log("Presionado")}>
+          Aceptar
+        </Button>
+        <Button variant="outline">Cancelar</Button>
+      </Card.Footer>
+    </Card>
+  );
+}
+```
+
+### Gestión de Temas (Claro / Oscuro)
+
+HeroUI v3 utiliza variables CSS basadas en el espacio de color `oklch`. El template soporta por defecto la preferencia del sistema operativo (`prefers-color-scheme: dark`) y selectores de tema nativos:
+
+- **Modo Claro:** `:root` o `data-theme="light"` / clase `.light`
+- **Modo Oscuro:** Preferencia del sistema o `data-theme="dark"` / clase `.dark`
+
+Para alternar temas interactivamente mediante un selector en el cliente, puedes instalar `next-themes` y utilizar un `ThemeProvider` cliente estándar.
 
 ---
 
