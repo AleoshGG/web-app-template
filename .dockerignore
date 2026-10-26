@@ -29,6 +29,6 @@ Thumbs.db
 # CI / docs
 coverage
 README.md
-prisma-8.md
+GuideLines.md
 AGENTS.md
 CLAUDE.md
