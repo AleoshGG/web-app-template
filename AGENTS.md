@@ -14,38 +14,32 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 |---|---|---|
 | Framework | Next.js (App Router) | 16 |
 | Runtime | React | 19 |
-| ORM | Prisma ORM (PSL, postgres adapter) | 8 RC |
-| Database | PostgreSQL | ≥ 15 |
 | Styles | Tailwind CSS | 4 |
 | Package manager | pnpm | 11 |
 | Deployment | Railway (Dockerfile, standalone) | — |
 | Language | TypeScript | 5 |
+| Persistence | Optional (see `GuideLines.md`) | — |
 
 ## Key files
 
 | File | Purpose |
 |---|---|
-| `src/prisma/contract.prisma` | Data schema — edit models here |
-| `src/prisma/db.ts` | Typed Prisma client (`import { db }`) |
-| `prisma.config.ts` | Prisma CLI config (schema path, `DATABASE_URL`) |
+| `app/` | Next.js App Router routes and pages |
 | `next.config.ts` | Next.js config (`output: "standalone"` for Docker) |
 | `Dockerfile` | Multi-stage build for Railway |
 | `railway.json` | Railway deployment config |
 | `.env.example` | Environment variable template |
+| `GuideLines.md` | Architecture guidelines and data persistence guide |
 
 ## Common commands
 
 ```bash
 pnpm dev              # Start development server
-pnpm build            # Emit Prisma contract + Next.js build
-pnpm contract:emit    # Regenerate contract.json and contract.d.ts after schema changes
-pnpm db:push          # Create / sync tables in the DB (dev)
-pnpm db:migrate       # Apply migrations (production)
+pnpm build            # Next.js standalone production build
+pnpm lint             # Run ESLint checks
 ```
 
-## Prisma ORM 8 conventions
+## Data Persistence & ORM
 
-- **Do not** use `@prisma/client` directly — the client is instantiated in `src/prisma/db.ts` via `@prisma/orm-postgres`.
-- After editing `contract.prisma`, always run `pnpm contract:emit` to regenerate types.
-- Query pattern: `db.orm.public.<Model>.<method>()`.
-- See `prisma-8.md` at the repo root for a full API quick reference.
+By default, this template has no database layer to stay lightweight and fast to build.
+If the project requires a database, refer to [`GuideLines.md`](GuideLines.md) for instructions on setting up PostgreSQL and Prisma ORM.

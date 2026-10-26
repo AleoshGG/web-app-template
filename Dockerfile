@@ -1,5 +1,5 @@
 # ─── Stage 1: deps ───────────────────────────────────────────────────────────
-# Install only production deps (no devDeps) using the lockfile.
+# Install dependencies using the frozen lockfile.
 FROM node:22-alpine AS deps
 
 # Install pnpm
@@ -9,11 +9,10 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install ALL deps (including dev) so we can build
 RUN pnpm install --frozen-lockfile
 
 # ─── Stage 2: builder ─────────────────────────────────────────────────────────
-# Generate the Prisma contract and build the Next.js app.
+# Build the Next.js app (output: standalone).
 FROM node:22-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
@@ -26,12 +25,10 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source
 COPY . .
 
-# DATABASE_URL must be set at build time only if prisma contract emit needs it.
-# For Railway, pass it as a build arg or set it in the Railway dashboard.
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
+# Disable Next.js telemetry during build
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Emit contract types + build Next.js (output: standalone)
+# Build Next.js
 RUN pnpm run build
 
 # ─── Stage 3: runner ──────────────────────────────────────────────────────────
@@ -41,6 +38,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs \
@@ -51,10 +49,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Copy Prisma runtime files needed at startup
-COPY --from=builder --chown=nextjs:nodejs /app/src/prisma ./src/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
-
 USER nextjs
 
 EXPOSE 3000
@@ -62,5 +56,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run DB migrations, then start the server
 CMD ["node", "server.js"]
