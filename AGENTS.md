@@ -14,6 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 |---|---|---|
 | Framework | Next.js (App Router) | 16 |
 | Runtime | React | 19 |
+| UI Components | HeroUI (`@heroui/react`) | 3 |
 | Styles | Tailwind CSS | 4 |
 | Package manager | pnpm | 11 |
 | Deployment | Railway (Dockerfile, standalone) | — |
